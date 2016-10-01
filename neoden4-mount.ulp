@@ -1,0 +1,74 @@
+#usage "<b>Mounting data generator for Neoden 4 PNP machine</b>\n"
+
+board(B) {
+
+  // Get filename
+  string fileName = dlgFileSave("Top - Save File", filesetext(B.name, "-top.csv"), "*.csv");
+  if (fileName == "") exit(0);
+
+  real mx = -1.0;
+  real my = -1.0;
+  real cx = 0.0;
+  real cy = 0.0;
+  int Result = dlgDialog("Machine parameters") {
+    dlgGridLayout {
+      dlgCell(0,0) dlgLabel("Machine xy of the first component:");
+      dlgCell(0,1) dlgRealEdit(mx, -1.0, 1000.0);
+      dlgCell(0,2) dlgRealEdit(my, -1.0, 1000.0)
+    }
+    dlgSpacing(10);
+    dlgHBoxLayout {
+      dlgPushButton("+Generate") {
+        dlgAccept();
+        output(fileName) {
+
+          printf("Designator,Footprint,Mid X,Mid Y,Layer,Rotation,Comment\n");
+          printf(",,,,,,\n");
+
+          int first = 0;
+          B.elements(E) {
+            int wasSmd = 0;
+                /*xmax =-2147483648,
+                xmin = 2147483647,
+                ymax = xmax,
+                ymin = xmin;*/
+            real angle = 0;
+
+
+            E.package.contacts(C) {
+              if (C.smd && C.smd.layer == 1) {
+                wasSmd = 1;
+
+                /*if (C.x > xmax) xmax = C.x;
+                if (C.y > ymax) ymax = C.y;
+                if (C.x < xmin) xmin = C.x;
+                if (C.y < ymin) ymin = C.y;*/
+              }
+            }
+            
+            if (wasSmd) {
+              if(E.angle <= 180)
+                angle = E.angle;
+              else
+                angle = E.angle - 360;
+              if(first==0) {
+                mx = mx - u2mm(E.x);
+                my = my - u2mm(E.y);
+                cx = u2mm(E.x) + mx;
+                cy = u2mm(E.y) + my;
+                first = 1;
+              } else {
+                cx = u2mm(E.x) + mx;
+                cy = u2mm(E.y) + my;
+              }
+              printf("%s,%s,%.2fmm,%.2fmm,T,%.0f,%s\n",
+                  E.name, E.package.name, cx, cy, angle, E.value);
+            }
+          }
+        }
+      }
+      dlgPushButton("Cancel") dlgReject();
+    }
+  };
+}
+
