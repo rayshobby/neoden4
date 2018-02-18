@@ -1,0 +1,122 @@
+#usage "<b>Data generation for mounting machines</b>\n"
+       "<p>"
+       "Generates files for smds on the top and bottom layers "
+       "wich can be used with mounting machines. "
+       "The x and y coordinates (units: mm) of the SMD elements are calculated "
+       "as mean of maximum and mimimum value of the smds origin points. "
+       "The calculated value does not necessarily fit with the origin "
+       "point of the part in the layout."
+       "All SMD elements populated in currently set assembly variant are considered."
+       "<p>"
+       "The syntax of the output data looks like this:"
+       "<p>"
+       "<tt>name x-coord y-coord rotation value package</tt>"
+       "<p>"
+       "<author>Author: support@cadsoft.de</author>"
+
+// THIS PROGRAM IS PROVIDED AS IS AND WITHOUT WARRANTY OF ANY KIND, EXPRESSED OR IMPLIED
+
+if (board) board(B) {
+
+  // Get filename
+  //string fileName = dlgFileSave("Save File", filesetext(B.name, ".mnt"), "*.mnt");
+  string fileName = dlgFileSave("Top - Save File", filesetext(B.name, "-top.csv"), "*.csv");
+  if (fileName == "") exit(0);
+
+  output(fileName) {
+
+	printf("Designator,Footprint,Mid X,Mid Y,Layer,Rotation,Comment\n");
+  printf(",,,,,,\n");
+
+   B.elements(E) if (E.populate) {
+
+     int wasSmd,
+         xmax =-2147483648,
+         xmin = 2147483647,
+         ymax = xmax,
+         ymin = xmin;
+     
+     real angle = 0;
+
+      wasSmd = 0;
+
+        E.package.contacts(C) {
+          if (C.smd && C.smd.layer == 1) {
+            wasSmd = 1;
+
+            if (C.x > xmax) xmax = C.x;
+            if (C.y > ymax) ymax = C.y;
+            if (C.x < xmin) xmin = C.x;
+            if (C.y < ymin) ymin = C.y;
+          }
+        }
+
+       if (wasSmd){
+         if(E.angle <= 180)
+         	 angle = E.angle;
+         else
+           angle = E.angle - 360;
+           
+         //printf("%s %5.2f %5.2f %3.0f %s %s\n",
+         //E.name, u2mm((xmin + xmax)/2), u2mm((ymin + ymax)/2),
+         //E.angle, E.value, E.package.name);
+         
+         printf("%s,%s,%.2fmm,%.2fmm,T,%.0f,%s\n",
+                  E.name, E.package.name, u2mm((xmin + xmax)/2), u2mm((ymin + ymax)/2), angle, E.value);
+         }
+   }
+ }
+
+  // Get filename
+  //fileName = dlgFileSave("Save File", filesetext(B.name, ".mnb"), "*.mnb");
+  fileName = dlgFileSave("Top - Save File", filesetext(B.name, "-bot.csv"), "*.csv");
+  if (fileName == "") exit(0);
+
+  output(fileName) {
+  
+  printf("Designator,Footprint,Mid X,Mid Y,Layer,Rotation,Comment\n");
+  printf(",,,,,,\n");
+
+   B.elements(E) if (E.populate) {
+
+     int wasSmd,
+         xmax =-2147483648,
+         xmin = 2147483647,
+         ymax = xmax,
+         ymin = xmin;
+     real angle = 0;
+
+      wasSmd = 0;
+
+        E.package.contacts(C) {
+          if (C.smd && C.smd.layer == 16) {
+           wasSmd = 1;
+
+            if (C.x > xmax) xmax = C.x;
+            if (C.y > ymax) ymax = C.y;
+            if (C.x < xmin) xmin = C.x;
+            if (C.y < ymin) ymin = C.y;
+          }
+         }
+
+       if (wasSmd){
+         if(E.angle <= 180)
+         	 angle = E.angle;
+         else
+           angle = E.angle - 360;
+           
+         //printf("%s %5.2f %5.2f %3.0f %s %s\n",
+         //E.name, u2mm((xmin + xmax)/2), u2mm((ymin + ymax)/2),
+         //E.angle, E.value, E.package.name);
+         
+         printf("%s,%s,%.2fmm,%.2fmm,B,%.0f,%s\n",
+                  E.name, E.package.name, u2mm((xmin + xmax)/2), u2mm((ymin + ymax)/2), angle, E.value);         
+         }
+   }
+ }
+}
+
+else {
+   dlgMessageBox("\n    Start this ULP in a Board    \n");
+   exit (0);
+}
