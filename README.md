@@ -1,8 +1,9 @@
 # EagleCAD ULP for NeoDen 4 PNP
 
-The script file in this folder is a EagleCAD ULP (user language program) for exporting PCB for NeoDen 4 pick and place machine. It's based on an existing script file for TM-240A machine, but modified to match the format acceptable by NeoDen 4.
+neoden4-mountsmd.ulp is a merge of rayshobby noeden script and the original mountsmd.ulp.  The purpose is to output component coordinates from EagleCAD to a format suitable for use by the NeoDen4 pick and place machine.  Save the ulp to eagle's ulp directory, and run it from the PCB editor.  It makes no changes to the board, it only generates csv lists of top and bottom SMD components for the placer.
 
-When running the script, it will ask for 'machine x-y coordinates of the first component'. Once the board position is determined (whether you use fixed tray method or PCB conveyor belt), you can locate the first component on the board in machine coordinates, and fill that into the dialog. The script will automatically translate PCB coordinates to machine coordinates.
+This script adds double sided output (layers 1 - top and 16 - bot) and uses rayshobby formatting and angle calculation merged into the behavior of the original mountsmd.  This script does not request machine coordinates of the first component.
 
-The exported .csv file can be directly imported to NeoDen 4. For simplicity, I only enabled top layer, but you can modify the script easily to support exporting bottom layer too if your PCB is double sided.
+When importing the bottom side into the NeoDen software, make sure that "mirror bottom side" checkbox is checked.  Upon import, the NeoDen software will recompute all the x coordinates to account for the flip.  All coordinates are recomputed based on the location of the first component, either from your BOM list, a fiducial or manually added via for alignment.
+
 
